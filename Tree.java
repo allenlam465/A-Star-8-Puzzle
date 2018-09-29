@@ -1,5 +1,6 @@
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Stack;
 
@@ -11,7 +12,13 @@ public class Tree{
 	 */
 
 	private static final String GOAL = "012345678";
+	
+	//chosen heuristics to use
+	private int hVal;
 
+	//used to obtain nodes from different depths and load them into a linked list
+	private LinkedList<Node> depth;
+	
 	//explored for explored nodes already associate with string to pull solution back out
 	private HashMap<String, Node> explored;
 
@@ -36,12 +43,31 @@ public class Tree{
 	public Tree(String state) {
 		explored = new HashMap<>();
 		solution = new Stack<>();
+		
+		hVal = 2;
 
-		frontier.add(new Node(state,null,0,0,h2Val(state),h2Val(state)));
+		frontier.add(new Node(state,null,0,hChoice(state, 2),hChoice(state, 2)));
+	}
+	
+	public Tree(String state, int hChoice) {
+		explored = new HashMap<>();
+		solution = new Stack<>();
+		
+		hVal = hChoice;
+		
+		frontier.add(new Node(state,null,0,hChoice(state, hVal),hChoice(state, hVal)));
 	}
 
 	public Stack<Node> getSol(){
 		return solution;
+	}
+	
+	public PriorityQueue<Node> getFrontier(){
+		return frontier;
+	}
+	
+	public HashMap<String,Node> getExplored(){
+		return explored;
 	}
 
 	// |1 2 3 4 0 5 6 7 8|
@@ -60,15 +86,12 @@ public class Tree{
 			
 			int tileLeft = zeroPos - 1, tileRight = zeroPos + 1, tileUp = zeroPos - 3, tileDown = zeroPos + 3;
 
-			//System.out.println("THE PEEK " + frontier.peek().getState());
-			//Add all possible states within explore/frontier?????
-
 			Node nextState;
 
 			if(leftRight != 0) {
 				//Swap left tile with 0
 				newState = swapTile(currentState, zeroPos, tileLeft);
-				nextState = new Node(newState, currentState, top.getDepth() + 1, h1Val(newState), h2Val(newState)  ,  top.getDepth() + 1 + h2Val(newState));
+				nextState = new Node(newState, currentState, top.getDepth() + 1, hChoice(newState, hVal)  ,  top.getDepth() + 1 + hChoice(newState, hVal));
 				newFrontier(nextState);
 
 			}
@@ -76,21 +99,21 @@ public class Tree{
 			if(leftRight  != 2) {
 				//Swap right tile with 0
 				newState = swapTile(currentState, zeroPos, tileRight);
-				nextState = new Node(newState, currentState, top.getDepth() + 1, h1Val(newState), h2Val(newState)  ,  top.getDepth() + 1 + h2Val(newState));
+				nextState = new Node(newState, currentState, top.getDepth() + 1, hChoice(newState, hVal)  ,  top.getDepth() + 1 + hChoice(newState, hVal));
 				newFrontier(nextState);				
 			}
 
 			if(upDown != 0) {
 				//Swap top tile with 0
 				newState = swapTile(currentState, zeroPos, tileUp);
-				nextState = new Node(newState, currentState, top.getDepth() + 1, h1Val(newState), h2Val(newState)  ,  top.getDepth() + 1 + h2Val(newState));
+				nextState = new Node(newState, currentState, top.getDepth() + 1, hChoice(newState, hVal)  ,  top.getDepth() + 1 + hChoice(newState, hVal));
 				newFrontier(nextState);
 			}
 
 			if(upDown != 2) {
 				//Swap bottom tile with 0
 				newState = swapTile(currentState, zeroPos, tileDown);
-				nextState = new Node(newState, currentState, top.getDepth() + 1, h1Val(newState), h2Val(newState)  ,  top.getDepth() + 1 + h2Val(newState));
+				nextState = new Node(newState, currentState, top.getDepth() + 1, hChoice(newState, hVal)  ,  top.getDepth() + 1 + hChoice(newState, hVal));
 				newFrontier(nextState);
 			}
 
@@ -101,16 +124,73 @@ public class Tree{
 		}	
 
 	}
+	
+	// Explore different states in multiple depths and add to the depth linkedlist to return 
+	public void depthExplore(Node node, boolean reachDepth) {
 
-	public boolean getSolution() {
-		while(!checkGoalState(frontier.peek())){
-			explore();
-			if(checkGoalState(frontier.peek()))
-				solution.push(frontier.peek());
-		}
+		String currentState = node.getState();
+		String newState; 
+		
+		int depth = node.getDepth();
+		
+		int zeroPos = currentState.indexOf('0');
+		int leftRight = zeroPos % 3;
+		int upDown = zeroPos / 3;
+		
+		
+		//Add all possible states it can have
+		if(reachDepth) {
+			
 
-		return true;
+			Node nextState;
+			int tileLeft = zeroPos - 1, tileRight = zeroPos + 1, tileUp = zeroPos - 3, tileDown = zeroPos + 3;
+
+
+			if(leftRight != 0) {
+				//Swap left tile with 0
+				newState = swapTile(currentState, zeroPos, tileLeft);
+				nextState = new Node(newState, currentState, depth + 1, hChoice(newState, hVal)  ,  depth + 1 + hChoice(newState, hVal));
+				newFrontier(nextState);
+
+			}
+
+			if(leftRight  != 2) {
+				//Swap right tile with 0
+				newState = swapTile(currentState, zeroPos, tileRight);
+				nextState = new Node(newState, currentState, depth + 1, hChoice(newState, hVal)  ,  depth + 1 + hChoice(newState, hVal));
+				newFrontier(nextState);				
+			}
+
+			if(upDown != 0) {
+				//Swap top tile with 0
+				newState = swapTile(currentState, zeroPos, tileUp);
+				nextState = new Node(newState, currentState, depth + 1, hChoice(newState, hVal)  ,  depth + 1 + hChoice(newState, hVal));
+				newFrontier(nextState);
+			}
+
+			if(upDown != 2) {
+				//Swap bottom tile with 0
+				newState = swapTile(currentState, zeroPos, tileDown);
+				nextState = new Node(newState, currentState, depth + 1, hChoice(newState, hVal)  ,  depth + 1 + hChoice(newState, hVal));
+				newFrontier(nextState);
+			}
+
+
+		}	
+
+		// Add state to explored set and remove from frontier
+		explored.put(currentState, node);
+		frontier.remove(node);
 	}
+	
+	public boolean getSolution() {
+ 		while(!checkGoalState(frontier.peek())){
+ 			explore();
+ 			if(checkGoalState(frontier.peek()))
+ 				solution.push(frontier.peek());
+ 		}
+ 		return true;
+ 	}
 
 	public void showSolution() {
 
@@ -121,7 +201,7 @@ public class Tree{
 			solution.push(explored.get(parentState));
 		}
 
-		System.out.format("%-10s%-10s%-10s%-10s%-10s\n", "Depth", "Puzzle","h1", "h2", "h Total");
+		System.out.format("%-10s%-10s%-10s%-10s\n", "Depth", "Puzzle", "h" + hVal, "h" + hVal + " Total");
 
 		while(!solution.isEmpty()) {
 			Node path = solution.pop();
@@ -134,7 +214,7 @@ public class Tree{
 		
 		String input = state.getState();		
 		
-		System.out.format("%-10s%-10s%-10s%-10s%-10s\n", state.getDepth(), input.charAt(0) +""+ input.charAt(1) +""+ input.charAt(2),state.getH1(), state.getH2(), state.gethSum() );
+		System.out.format("%-10s%-10s%-10s%-10s\n", state.getDepth(), input.charAt(0) +""+ input.charAt(1) +""+ input.charAt(2), state.gethVal(), state.gethSum() );
 		System.out.format("%-10s%-10s\n", "",input.charAt(3) +""+ input.charAt(4) +""+ input.charAt(5));
 		System.out.format("%-10s%-10s\n", "",input.charAt(6) +""+ input.charAt(7) +""+ input.charAt(8));
 		System.out.println("\n");
@@ -170,10 +250,35 @@ public class Tree{
 
 		return val;
 	}
+	
+	public int hChoice(String state, int i) {
+		if(i == 1) 
+			return h1Val(state);
+		else
+			return h2Val(state);
+	}
 
 	// Check node if it has reached the goal state;
 	public boolean checkGoalState(Node state) {
 		return state.getState().equals(GOAL);
+	}
+	
+	// Add unexplored nodes into a linked until the frontier is empty
+	public LinkedList<Node> getStatesDepth(int d){
+		depth = new LinkedList<Node>();
+		frontier.add(frontier.peek());
+		while(frontier.peek() != null) {
+			exploreDepth(frontier.peek(), d);
+		}
+		return depth;	
+	}
+	
+	// Continues to explore the depth until a node at specified depth fits
+	private void exploreDepth(Node node, int depthGoal) {
+		if(node.getDepth() == depthGoal && !explored.containsKey(node.getState())) {
+			depth.add(node);
+		}
+		depthExplore(node, node.getDepth() < depthGoal);
 	}
 
 	// Swap tile with empty space 

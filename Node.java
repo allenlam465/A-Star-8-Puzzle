@@ -10,8 +10,7 @@ public class Node {
 	//Each node will hold the sum of distance from the goal state
 	//h1 will be added to the fSum during A* alg
 
-	private int h1;
-	private int h2;
+	private int hVal;
 	private int hSum;
 	private int depth;
 
@@ -20,13 +19,36 @@ public class Node {
 	private String parentState; 
 
 
-	public Node(String state, String parentState, int depth, int h1, int h2, int hSum) {
+	public Node(String state, String parentState, int depth, int hVal, int hSum) {
 		this.state = state;
 		this.parentState = parentState;
 		this.setDepth(depth);
-		this.setH1(h1);
-		this.setH2(h2);
+		this.sethVal(hVal);
 		this.sethSum(hSum);
+	}
+	
+	public String getState() {
+		return state;
+	}
+	
+	public void setState(String state) {
+		this.state = state;
+	}
+	
+	public String getParentState() {
+		return parentState;
+	}
+	
+	public void setParentState(String parentState) {
+		this.parentState = parentState;
+	}
+	
+	public int getDepth() {
+		return depth;
+	}
+	
+	public void setDepth(int depth) {
+		this.depth = depth;
 	}
 
 	public int gethSum() {
@@ -36,45 +58,15 @@ public class Node {
 	public void sethSum(int hSum) {
 		this.hSum = hSum;
 	}
-
-	public int getH2() {
-		return h2;
+	
+	public void sethVal(int hVal) {
+		this.hVal = hVal;
+	}
+	
+	public int gethVal() {
+		return hVal;
 	}
 
-	public void setH2(int h2) {
-		this.h2 = h2;
-	}
 
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public String getParentState() {
-		return parentState;
-	}
-
-	public void setParentState(String parentState) {
-		this.parentState = parentState;
-	}
-
-	public int getDepth() {
-		return depth;
-	}
-
-	public void setDepth(int depth) {
-		this.depth = depth;
-	}
-
-	public int getH1() {
-		return h1;
-	}
-
-	public void setH1(int h1) {
-		this.h1 = h1;
-	}
 
 }
